@@ -23,4 +23,4 @@ python3 side_project_launcher_langgraph.py
 Copy `.env.example` to `.env` and add your Anthropic API key:
 - `ANTHROPIC_API_KEY` - Anthropic API key (required for Claude models)
 
-Your coding assistant retrieves the LaunchDarkly SDK key automatically when creating the project using your API key (`LAUNCHDARKLY_ACCESS_TOKEN`).
+Your coding assistant retrieves the LaunchDarkly SDK key automatically when creating the project using your API key (`LD_API_KEY`).
