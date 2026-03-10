@@ -8,7 +8,7 @@ Multi-agent system powered by LaunchDarkly AI Configs that helps validate startu
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
-# Edit .env with your keys
+# Edit .env with your Anthropic API key
 ```
 
 ## Run
@@ -20,6 +20,7 @@ python3 side_project_launcher_langgraph.py
 
 ## Configuration
 
-Copy `.env.example` to `.env` and add your keys:
-- `LAUNCHDARKLY_SDK_KEY` - LaunchDarkly SDK key (from project settings)
-- `ANTHROPIC_API_KEY` - Anthropic API key
+Copy `.env.example` to `.env` and add your Anthropic API key:
+- `ANTHROPIC_API_KEY` - Anthropic API key (required for Claude models)
+
+Your coding assistant retrieves the LaunchDarkly SDK key automatically when creating the project using your API key (`LAUNCHDARKLY_ACCESS_TOKEN`).
