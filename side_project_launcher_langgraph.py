@@ -15,7 +15,7 @@ load_dotenv()
 import ldclient
 from ldclient import Context
 from ldclient.config import Config
-from ldai.client import LDAIClient, AIAgentConfigDefault
+from ldai import LDAIClient, AIAgentConfigDefault
 
 from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -71,6 +71,7 @@ def idea_validator_node(state: SideProjectState) -> SideProjectState:
     })
 
     if config.enabled:
+        tracker = config.create_tracker()
         llm = ChatAnthropic(model=config.model.name)
         messages = [
             SystemMessage(content=config.instructions),
@@ -78,7 +79,7 @@ def idea_validator_node(state: SideProjectState) -> SideProjectState:
         ]
         response = llm.invoke(messages)
         state["idea_validation"] = response.content
-        config.tracker.track_success()
+        tracker.track_success()
     else:
         state["idea_validation"] = "Config not enabled"
 
@@ -95,6 +96,7 @@ def landing_page_writer_node(state: SideProjectState) -> SideProjectState:
     })
 
     if config.enabled:
+        tracker = config.create_tracker()
         llm = ChatAnthropic(model=config.model.name)
         messages = [
             SystemMessage(content=config.instructions),
@@ -102,7 +104,7 @@ def landing_page_writer_node(state: SideProjectState) -> SideProjectState:
         ]
         response = llm.invoke(messages)
         state["landing_page_copy"] = response.content
-        config.tracker.track_success()
+        tracker.track_success()
     else:
         state["landing_page_copy"] = "Config not enabled"
 
@@ -119,6 +121,7 @@ def tech_stack_advisor_node(state: SideProjectState) -> SideProjectState:
     })
 
     if config.enabled:
+        tracker = config.create_tracker()
         llm = ChatAnthropic(model=config.model.name)
         messages = [
             SystemMessage(content=config.instructions),
@@ -126,7 +129,7 @@ def tech_stack_advisor_node(state: SideProjectState) -> SideProjectState:
         ]
         response = llm.invoke(messages)
         state["tech_stack"] = response.content
-        config.tracker.track_success()
+        tracker.track_success()
     else:
         state["tech_stack"] = "Config not enabled"
 

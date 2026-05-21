@@ -13,7 +13,7 @@ load_dotenv()
 import ldclient
 from ldclient import Context
 from ldclient.config import Config
-from ldai.client import LDAIClient, AIAgentConfigDefault
+from ldai import LDAIClient, AIAgentConfigDefault
 
 # Initialize LaunchDarkly SDK
 SDK_KEY = os.environ.get('LAUNCHDARKLY_SDK_KEY')
