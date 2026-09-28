@@ -1,5 +1,8 @@
+# Requires Python 3.12 or later (launchdarkly-ai-server floor).
+# The AI SDK is in open beta, so the LaunchDarkly packages are pinned exactly.
 launchdarkly-server-sdk>=9.0.0
-launchdarkly-server-sdk-ai>=0.1.0
+launchdarkly-ai-server==0.2.4
+launchdarkly-ai-langchain-agents==0.2.4
 langchain-anthropic>=0.1.0
 langgraph>=0.0.20
 python-dotenv>=1.0.0
