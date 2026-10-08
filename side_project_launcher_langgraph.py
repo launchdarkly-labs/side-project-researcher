@@ -7,6 +7,7 @@ Based on the tutorial: LLM Product Development with LaunchDarkly Agent Skills
 
 import asyncio
 import os
+import warnings
 from datetime import datetime
 from pathlib import Path
 from dotenv import load_dotenv
@@ -17,6 +18,13 @@ from launchdarkly_ai_langchain_agents import langchain_agents
 from launchdarkly_ai_server import init_client, inspect_config, shutdown
 
 from tools import TOOL_HANDLERS
+
+# A config's tools arrive twice: at the top level, where the SDK binds them,
+# and as a backwards-compatibility copy inside model.parameters. Versions
+# through 0.2.4 forward that copy to the model constructor, so LangChain warns
+# once per agent call. Fixed upstream; delete this when the pin moves past
+# 0.2.4.
+warnings.filterwarnings("ignore", message=".*tools is not default parameter.*")
 
 from langgraph.graph import StateGraph, END
 from typing import TypedDict
@@ -156,8 +164,6 @@ Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}
 """
     (output_dir / "00-summary.md").write_text(summary)
 
-    print(f"\n[done] Output saved to: {output_dir}/")
-
     return state
 
 
@@ -240,9 +246,19 @@ async def main():
     # Flush pending LaunchDarkly events and spans before exiting.
     await shutdown()
 
+    output_dir = Path(result["output_dir"]).resolve()
+    files = sorted(output_dir.glob("*.md"))
+
     print("\n" + "=" * 60)
-    print(f"Done! Check your output in: {result['output_dir']}/")
-    print("=" * 60)
+    print("Done. Your side project brief is ready.")
+    print("=" * 60 + "\n")
+
+    for path in files:
+        lines = len(path.read_text().splitlines())
+        print(f"  {path.name:<24} {lines:>4} lines")
+
+    # Most terminals turn a file:// URL into something you can click.
+    print(f"\n  {output_dir.as_uri()}\n")
 
 
 if __name__ == "__main__":

@@ -9,3 +9,6 @@ langgraph>=0.0.20
 python-dotenv>=1.0.0
 # Backs the agents' web_search tool; no API key required.
 ddgs>=9.0.0
+# Turns on SDK tracing. Without it every run opens with a notice that
+# telemetry is unavailable.
+opentelemetry-sdk>=1.25
