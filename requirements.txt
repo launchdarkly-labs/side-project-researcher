@@ -6,3 +6,5 @@ launchdarkly-ai-langchain-agents==0.2.4
 langchain-anthropic>=0.1.0
 langgraph>=0.0.20
 python-dotenv>=1.0.0
+# Backs the agents' web_search tool; no API key required.
+ddgs>=9.0.0

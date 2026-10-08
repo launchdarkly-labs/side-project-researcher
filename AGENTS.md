@@ -9,7 +9,7 @@ Side Project Launcher: a three-agent LangGraph pipeline (idea validator → land
 - `ANTHROPIC_API_KEY` is required. `LAUNCHDARKLY_SDK_KEY` is read from the environment and is left blank in `.env.example` on purpose: the tutorial flow has the reader's coding assistant create the LaunchDarkly project through the API (`LD_API_KEY`) and fill the SDK key in.
 - Run `python3 side_project_launcher_langgraph.py`. `side_project_launcher.py` is the same three calls without LangGraph, kept as the "before" version for the tutorial.
 - Both scripts prompt for seven answers on stdin before any model call, so a non-interactive run needs them piped in.
-- No tests. Verify by running the graph end to end and confirming three files land in `output/`: `01-idea-validation.md` and its siblings. `output/` is gitignored.
+- No tests. Verify by running the graph end to end and confirming three files land in `output/`: `01-idea-validation.md` and its siblings. `output/` is gitignored. A full run takes a few minutes, since each agent makes several tool calls.
 
 ## The SDK surface is async
 
@@ -22,6 +22,14 @@ Agents run through `langchain_agents(config_key, user_input, context, variables=
 The three AI Config keys, `idea-validator`, `landing-page-writer`, `tech-stack-advisor`, appear in both Python files and must exist in agent mode in the LaunchDarkly project. Both files read them with `inspect_config()`, which never raises and never calls a provider, so a missing or disabled config does not crash: the helper returns `None`, the node writes the literal string `"Config not enabled"` into the state, and the graph continues. When output looks like that, the fix is in LaunchDarkly, not the code.
 
 Prompt variables are passed per call, as the third argument to `run_agent()`; a new `{{variable}}` in a LaunchDarkly instruction needs a matching key in that dict in both files. Note that `inspect_config()` only reads — it does not interpolate. The variables matter at the point you actually run the agent through `langchain_agents()`.
+
+## Tools need handlers in the application
+
+The configs attach tool schemas, but a schema only tells the model a tool exists. `tools.py` holds the callables and `run_agent()` passes them as `tool_handlers`; without that, the first tool call fails with `No handler registered for tool "<name>"`. The dict keys have to match the tool names in LaunchDarkly.
+
+The SDK invokes a handler with a single dict of the arguments the model chose, not as keyword arguments, so each function takes one `args` mapping. Writing a handler with named parameters gets you `TypeError: unhashable type: 'dict'` at the first call.
+
+Attaching a new tool in LaunchDarkly therefore means adding a matching entry to `TOOL_HANDLERS`.
 
 ## Model parameters are passed through verbatim
 

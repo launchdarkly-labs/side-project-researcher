@@ -16,6 +16,8 @@ load_dotenv()
 from launchdarkly_ai_langchain_agents import langchain_agents
 from launchdarkly_ai_server import init_client, inspect_config, shutdown
 
+from tools import TOOL_HANDLERS
+
 from langgraph.graph import StateGraph, END
 from typing import TypedDict
 
@@ -39,8 +41,16 @@ async def run_agent(config_key: str, context: dict, variables: dict, user_input:
         return "Config not enabled"
 
     # The LangChain handler builds the chat model from the config's provider and
-    # model name, so this file no longer constructs ChatAnthropic itself.
-    result = await langchain_agents(config_key, user_input, context, variables=variables)
+    # model name, so this file no longer constructs ChatAnthropic itself. The
+    # tools attached in LaunchDarkly are schemas only, so the callables behind
+    # them have to be supplied here or the agent fails the moment it calls one.
+    result = await langchain_agents(
+        config_key,
+        user_input,
+        context,
+        variables=variables,
+        tool_handlers=TOOL_HANDLERS,
+    )
     return str(result.response)
 
 
