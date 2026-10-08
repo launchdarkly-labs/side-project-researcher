@@ -43,6 +43,8 @@ Each config also attaches tools. LaunchDarkly stores the tool *schema*; the code
 
 **`AsyncMessages.create() got an unexpected keyword argument 'maxTokens'`** — a config's model parameters use a camelCase name. The SDK passes model parameters straight through to the provider, so they have to match what the provider expects. Rename `maxTokens` to `max_tokens` in the AI Config in LaunchDarkly.
 
+**`UserWarning: tools is not default parameter. tools was transferred to model_kwargs`** — harmless, and already fixed upstream. A config's tools are delivered both at the top level, where the SDK binds them, and as a backwards-compatibility copy inside `model.parameters`. Versions through 0.2.4 forwarded that copy to the model constructor. The fix is on `launchdarkly-ai-langchain-agents` main; remove this note and raise the pin once it releases.
+
 **`No handler registered for tool "<name>"`** — the config attaches a tool that `TOOL_HANDLERS` in `tools.py` doesn't cover. Add a handler under exactly that name.
 
 **`404 - model: <name>`** — your Anthropic key doesn't have access to the model the config names. Either switch the config's model or use a key that can reach it.

@@ -2,6 +2,7 @@
 # The AI SDK is in open beta, so the LaunchDarkly packages are pinned exactly.
 launchdarkly-server-sdk>=9.0.0
 launchdarkly-ai-server==0.2.4
+# Raise to 0.2.5 when it ships: it stops the tools warning on every agent call.
 launchdarkly-ai-langchain-agents==0.2.4
 langchain-anthropic>=0.1.0
 langgraph>=0.0.20
