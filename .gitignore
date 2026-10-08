@@ -1,4 +1,7 @@
 .env
+# Catches backups like ".env copy" and ".env.local", which hold live keys.
+.env*
+!.env.example
 .venv/
 __pycache__/
 *.pyc
