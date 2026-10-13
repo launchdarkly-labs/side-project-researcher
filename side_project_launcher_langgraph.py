@@ -7,7 +7,6 @@ Based on the tutorial: LLM Product Development with LaunchDarkly Agent Skills
 
 import asyncio
 import os
-import warnings
 from datetime import datetime
 from pathlib import Path
 from dotenv import load_dotenv
@@ -18,14 +17,6 @@ from launchdarkly_ai_langchain_agents import langchain_agents
 from launchdarkly_ai_server import init_client, inspect_config, shutdown
 
 from tools import TOOL_HANDLERS
-
-# A config's tools arrive twice: at the top level, where the SDK binds them,
-# and as a backwards-compatibility copy inside model.parameters. Versions
-# through 0.2.4 forward that copy to the model constructor, so LangChain warns
-# once per agent call. Fixed upstream; delete this when the pin moves past
-# 0.2.4.
-warnings.filterwarnings("ignore", message=".*tools is not default parameter.*")
-
 from langgraph.graph import StateGraph, END
 from typing import TypedDict
 
