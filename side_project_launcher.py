@@ -22,16 +22,7 @@ def build_context(user_id: str, **attributes):
 
 
 async def get_agent_config(config_key: str, user_id: str, variables: dict = None):
-    """Read an agent-mode config from LaunchDarkly without calling a model.
-
-    Returns the parsed config dict, or None when the variation is disabled or
-    unavailable. This module only reads and reports configs, so inspect_config
-    is the right entry point: it never raises and never calls a provider.
-
-    Note that `variables` are applied when the SDK assembles a prompt, so they
-    are not interpolated here. Pass them to `config().invoke()` at the point you
-    actually run the agent.
-    """
+    """Read an agent-mode config without calling a model. Returns None when it's disabled."""
     context = build_context(user_id)
     inspected = await inspect_config(config_key, context)
     if not inspected["enabled"] or not inspected["config"]:
@@ -96,8 +87,6 @@ async def main():
     if not SDK_KEY:
         raise Exception("LAUNCHDARKLY_SDK_KEY is not set")
 
-    # The key is passed explicitly so this keeps using LAUNCHDARKLY_SDK_KEY; the
-    # SDK would otherwise look for LD_SDK_KEY.
     await init_client({"sdkKey": SDK_KEY})
 
     user_id = "user-123"

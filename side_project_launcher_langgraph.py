@@ -29,20 +29,11 @@ def build_context(user_id: str, **attributes):
 
 
 async def run_agent(config_key: str, context: dict, variables: dict, user_input: str) -> str:
-    """Run one agent-mode config, or report that it is not enabled.
-
-    inspect_config never raises and never calls a provider, so it is a cheap way
-    to keep this graph's "Config not enabled" branch. The invoke that follows is
-    what records duration, tokens, and success/error to LaunchDarkly.
-    """
+    """Run one agent-mode config, or report that it is not enabled."""
     inspected = await inspect_config(config_key, context)
     if not inspected["enabled"] or not inspected["config"]:
         return "Config not enabled"
 
-    # The LangChain handler builds the chat model from the config's provider and
-    # model name, so this file no longer constructs ChatAnthropic itself. The
-    # tools attached in LaunchDarkly are schemas only, so the callables behind
-    # them have to be supplied here or the agent fails the moment it calls one.
     result = await langchain_agents(
         config_key,
         user_input,
@@ -227,8 +218,6 @@ async def main():
     print("Launching agents...")
     print("=" * 60)
 
-    # The key is passed explicitly so this keeps using LAUNCHDARKLY_SDK_KEY; the
-    # SDK would otherwise look for LD_SDK_KEY.
     await init_client({"sdkKey": SDK_KEY})
 
     app = build_side_project_graph()
@@ -248,7 +237,6 @@ async def main():
         lines = len(path.read_text().splitlines())
         print(f"  {path.name:<24} {lines:>4} lines")
 
-    # Most terminals turn a file:// URL into something you can click.
     print(f"\n  {output_dir.as_uri()}\n")
 
 

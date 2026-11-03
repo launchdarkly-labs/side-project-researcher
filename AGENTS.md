@@ -4,39 +4,22 @@ Side Project Launcher: a three-agent LangGraph pipeline (idea validator → land
 
 ## Setup and commands
 
-- Python 3.12 or later; `launchdarkly-ai-server` will not install below that.
+- Python 3.12 or later.
 - `python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt`, then `cp .env.example .env`.
-- `ANTHROPIC_API_KEY` is required. `LAUNCHDARKLY_SDK_KEY` is read from the environment and is left blank in `.env.example` on purpose: the tutorial flow has the reader's coding assistant create the LaunchDarkly project through the API (`LD_API_KEY`) and fill the SDK key in.
-- Run `python3 side_project_launcher_langgraph.py`. `side_project_launcher.py` is the same three calls without LangGraph, kept as the "before" version for the tutorial.
-- Both scripts prompt for seven answers on stdin before any model call, so a non-interactive run needs them piped in.
-- No tests. Verify by running the graph end to end and confirming three files land in `output/`: `01-idea-validation.md` and its siblings. `output/` is gitignored. A full run takes a few minutes, since each agent makes several tool calls.
-
-## The SDK surface is async
-
-`init_client`, `inspect_config`, and `shutdown` are all coroutines, which is why both scripts are built around `asyncio.run(main())` rather than running straight through. `init_client({"sdkKey": SDK_KEY})` passes the key explicitly because the SDK otherwise looks for `LD_SDK_KEY`, not `LAUNCHDARKLY_SDK_KEY`.
-
-Agents run through `langchain_agents(config_key, user_input, context, variables=...)` from `launchdarkly-ai-langchain-agents`. That handler builds the chat model from the config's own `provider` and `model` fields, so neither file constructs `ChatAnthropic` directly any more. Adding a `ChatAnthropic(...)` call back into a node is a regression, not a fix.
+- `ANTHROPIC_API_KEY` is required. `LAUNCHDARKLY_SDK_KEY` is left blank in `.env.example` on purpose: the tutorial has the reader's coding assistant create the LaunchDarkly project and fill it in.
+- Run `python3 side_project_launcher_langgraph.py`. It asks seven questions on stdin first. `side_project_launcher.py` is the "before" version for the tutorial.
+- No tests. Verify by running the graph end to end and confirming three files land in `output/`.
 
 ## Config keys are the contract
 
-The three AI Config keys, `idea-validator`, `landing-page-writer`, `tech-stack-advisor`, appear in both Python files and must exist in agent mode in the LaunchDarkly project. Both files read them with `inspect_config()`, which never raises and never calls a provider, so a missing or disabled config does not crash: the helper returns `None`, the node writes the literal string `"Config not enabled"` into the state, and the graph continues. When output looks like that, the fix is in LaunchDarkly, not the code.
+The three AI Config keys, `idea-validator`, `landing-page-writer` and `tech-stack-advisor`, must exist in agent mode in the LaunchDarkly project. A missing or disabled config doesn't crash: the node writes `"Config not enabled"` and the graph continues. The fix for that is in LaunchDarkly, not the code.
 
-Prompt variables are passed per call, as the third argument to `run_agent()`; a new `{{variable}}` in a LaunchDarkly instruction needs a matching key in that dict in both files. Note that `inspect_config()` only reads — it does not interpolate. The variables matter at the point you actually run the agent through `langchain_agents()`.
+A new `{{variable}}` in a config's instructions needs a matching key in the variables dict passed to `run_agent()`.
 
-## Tools need handlers in the application
+## Tools need handlers
 
-The configs attach tool schemas, but a schema only tells the model a tool exists. `tools.py` holds the callables and `run_agent()` passes them as `tool_handlers`; without that, the first tool call fails with `No handler registered for tool "<name>"`. The dict keys have to match the tool names in LaunchDarkly.
+A tool attached to a config in LaunchDarkly needs an entry with the same name in `TOOL_HANDLERS` in `tools.py`, or the agent fails on its first call to it.
 
-The SDK invokes a handler with a single dict of the arguments the model chose, not as keyword arguments, so each function takes one `args` mapping. Writing a handler with named parameters gets you `TypeError: unhashable type: 'dict'` at the first call.
+## Model parameters
 
-Attaching a new tool in LaunchDarkly therefore means adding a matching entry to `TOOL_HANDLERS`.
-
-## Model parameters are passed through verbatim
-
-The LangChain agents handler takes whatever sits in a config's `model.parameters` and hands it to the chat model constructor unchanged, which in turn forwards unrecognized keys to the provider API. So the parameter names in LaunchDarkly have to be the ones the provider expects: `max_tokens`, not `maxTokens`. A camelCase name reaches Anthropic as-is and the run dies with `AsyncMessages.create() got an unexpected keyword argument 'maxTokens'` at the first agent node.
-
-`model.custom` is not a workaround. The handler never reads it, so anything parked there is silently dropped.
-
-## Branches
-
-`sdk-roll-forward` carries the migration from the legacy `ldai` package to `launchdarkly-ai-server`. Work from it rather than reapplying the old API.
+The SDK forwards a config's model parameters to Anthropic. Use the provider's names (`max_tokens`), and don't set `temperature`: current Claude models reject it.
