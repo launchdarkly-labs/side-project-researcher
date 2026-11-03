@@ -6,7 +6,7 @@ Three agents run in sequence — `idea-validator`, `landing-page-writer`, `tech-
 
 ## Requirements
 
-Python 3.12 or later. This project uses the current LaunchDarkly AI SDK (`launchdarkly-ai-server`), which replaced the earlier `ldai` package; the exact versions are pinned in `requirements.txt` because the SDK is in open beta.
+Python 3.12 or later. This project uses the current LaunchDarkly AI SDK (`launchdarkly-ai-server`), which replaced the earlier `ldai` package. `requirements.txt` pins `launchdarkly-ai-server` and `launchdarkly-ai-langchain-agents` at 1.0.0 or later.
 
 ## Setup
 
